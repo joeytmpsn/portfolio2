@@ -403,7 +403,7 @@ ul {
 .work-card__body {
   display: grid;
   gap: 1.25rem;
-  padding: 24px 2rem 2rem;
+  padding: 8px 2rem 24px;
 }
 
 .work-card__title {
