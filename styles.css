@@ -415,7 +415,7 @@ ul {
 .work-card__body .work-card__summary {
   max-width: 47rem;
   font-size: 16px !important;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.45;
   color: var(--ink-soft);
 }
