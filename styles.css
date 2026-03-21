@@ -619,6 +619,11 @@ ul {
     padding-inline: 1.25rem;
   }
 
+  .work-card__meta .meta-pill {
+    font-size: 10px;
+    letter-spacing: 0.02em;
+  }
+
   .work-card__summary {
     font-size: 16px !important;
     font-weight: 400;
