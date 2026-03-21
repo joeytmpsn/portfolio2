@@ -393,12 +393,10 @@ ul {
 }
 
 .work-card__media {
-  padding: 1rem;
-  margin: 0 2rem;
-  border-radius: 30px;
-  background: linear-gradient(180deg, #f5f0ed 0%, #e6e0dc 100%);
-  box-shadow: inset 0 4px 16px -8px rgba(0, 0, 0, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.36);
+  margin: 16px;
+  padding: 0;
+  border-radius: 16px;
+  background: transparent;
   overflow: hidden;
 }
 
@@ -433,7 +431,7 @@ ul {
   position: relative;
   overflow: hidden;
   min-height: 23rem;
-  border-radius: 28px;
+  border-radius: 16px;
   background: var(--ink-muted);
 }
 
@@ -443,26 +441,6 @@ ul {
   min-height: 23rem;
   object-fit: cover;
   display: block;
-}
-
-.preview--mint {
-  background: linear-gradient(135deg, #a8e2c9, #50ce9f 48%, #9cebd1 100%);
-}
-
-.preview--rose {
-  background: linear-gradient(135deg, #ffcdc9, #ff9a96 55%, #ffb5b1 100%);
-}
-
-.preview--gold {
-  background: linear-gradient(135deg, #f7d595, #f4b555 58%, #f6c26c 100%);
-}
-
-.preview--blue {
-  background: linear-gradient(135deg, #d0dcff, #a8bcff 60%, #b8c7ff 100%);
-}
-
-.preview--yellow {
-  background: linear-gradient(135deg, #f9e281, #f0cf24 58%, #f6dc4b 100%);
 }
 
 .meta-pill--brand {
@@ -625,9 +603,11 @@ ul {
     letter-spacing: 0.5px;
   }
 
-  .work-card__summary {
+  .work-card__body .work-card__summary {
     font-size: 16px !important;
-    font-weight: 400;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    line-height: 1.45;
   }
 
   .preview {
@@ -659,11 +639,6 @@ ul {
 
   .work-card__meta {
     gap: 0.5rem;
-  }
-
-  .work-card__summary {
-    font-size: 16px !important;
-    font-weight: 400;
   }
 
   .shell--footer {
