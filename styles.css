@@ -379,13 +379,14 @@ ul {
 }
 
 .work-grid {
-  grid-column: 3 / 13;
+  grid-column: 3 / 11;
   display: grid;
   gap: 2.2rem;
 }
 
 .work-card {
   position: relative;
+  min-width: 0;
   border-radius: 32px;
   border: 1px solid #F5F5F5;
   background: #F7F3F1;
@@ -395,11 +396,15 @@ ul {
 
 .work-card__link {
   display: block;
+  min-width: 0;
   text-decoration: none;
 }
 
 .work-card__media {
+  box-sizing: border-box;
   margin: 16px;
+  width: calc(100% - 32px);
+  max-width: calc(100% - 32px);
   padding: 0;
   border-radius: 16px;
   background: transparent;
@@ -436,16 +441,14 @@ ul {
 .preview {
   position: relative;
   overflow: hidden;
-  min-height: 23rem;
   border-radius: 16px;
   background: var(--ink-muted);
 }
 
 .preview img {
   width: 100%;
-  height: 100%;
-  min-height: 23rem;
-  object-fit: cover;
+  max-width: 100%;
+  height: auto;
   display: block;
 }
 
@@ -628,14 +631,6 @@ ul {
     font-size: 10px;
     font-weight: 500;
     letter-spacing: 0.5px;
-  }
-
-  .preview {
-    min-height: 16rem;
-  }
-
-  .preview img {
-    min-height: 16rem;
   }
 }
 
