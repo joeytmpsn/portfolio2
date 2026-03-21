@@ -30,7 +30,7 @@
   --space-8: 4rem;
   --space-9: 6rem;
 
-  --text-eyebrow: 0.875rem;
+  --text-eyebrow: 20px;
   --text-heading-100: 1rem;
   --text-heading-200: 1.25rem;
   --text-body-100: 1rem;
@@ -40,8 +40,7 @@
 
   --shell-width: min(100% - 2rem, 82rem);
   --grid-columns: 12;
-  --grid-gutter: 1.5rem;
-  --grid-gutter-max: 64px;
+  --grid-gutter: 32px;
   --motion-smooth: 180ms ease;
 }
 
@@ -156,8 +155,8 @@ ul {
   padding: 0.55rem 0.95rem;
   border: 0.5px solid rgba(142, 142, 142, 0.3);
   border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-pill);
-  background: var(--surface-pill);
+  box-shadow: none;
+  background: transparent;
   text-decoration: none;
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -165,10 +164,19 @@ ul {
   line-height: 1;
   color: var(--ink-strong);
   transition:
-    background-color var(--motion-smooth),
-    border-color var(--motion-smooth),
-    transform var(--motion-smooth),
-    box-shadow var(--motion-smooth);
+    background-color 150ms linear,
+    border-color 150ms linear,
+    box-shadow 150ms linear;
+}
+
+.pill-nav__link:hover:not(.is-current),
+.pill-nav__link:focus-visible:not(.is-current) {
+  background: var(--surface-pill);
+  box-shadow: var(--shadow-pill);
+  transition:
+    background-color 150ms ease-out,
+    border-color 150ms ease-out,
+    box-shadow 150ms ease-out;
 }
 
 .meta-pill {
@@ -189,11 +197,6 @@ ul {
   color: var(--ink-strong);
 }
 
-.pill-nav__link:hover,
-.pill-nav__link:focus-visible {
-  transform: translateY(-1px);
-}
-
 .pill-nav__link.is-current {
   background: var(--surface-pill-strong);
   border-color: rgba(255, 118, 49, 0.55);
@@ -203,27 +206,20 @@ ul {
 }
 
 .hero {
-  padding: 2.5rem 0 3rem;
+  padding: 2.5rem 0 64px;
 }
 
 .shell--hero {
   display: grid;
   grid-template-columns: repeat(var(--grid-columns), 1fr);
-  column-gap: min(var(--grid-gutter), var(--grid-gutter-max));
+  column-gap: var(--grid-gutter);
   align-items: start;
   position: relative;
 }
 
-.eyebrow {
-  font-size: var(--text-eyebrow);
-  font-weight: 500;
-  line-height: 1.3;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
+.eyebrow,
 .hero__eyebrow {
-  font-size: 20px;
+  font-size: var(--text-eyebrow);
   font-weight: 500;
   line-height: 1.3;
   letter-spacing: 0.02em;
@@ -233,6 +229,9 @@ ul {
 .hero__eyebrow {
   grid-column: 1 / 3;
   padding-top: 8.5rem;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .hero__copy {
@@ -519,7 +518,7 @@ ul {
 
   .shell--hero {
     grid-template-columns: repeat(var(--grid-columns), 1fr);
-    column-gap: min(var(--grid-gutter), var(--grid-gutter-max));
+    column-gap: var(--grid-gutter);
     row-gap: 1.5rem;
   }
 
@@ -596,10 +595,19 @@ ul {
     padding-top: 1.25rem;
   }
 
-  .hero__eyebrow,
-  .hero__copy {
-    grid-column: 3 / -1;
+  .hero__eyebrow {
+    grid-column: 1 / 3;
     grid-row: auto;
+  }
+
+  .hero__copy {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  .hero__lede {
+    font-size: 20px;
+    font-weight: 400;
   }
 
   .scene-frame {
