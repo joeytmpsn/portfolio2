@@ -621,7 +621,8 @@ ul {
 
   .work-card__meta .meta-pill {
     font-size: 10px;
-    letter-spacing: 0.02em;
+    font-weight: 500;
+    letter-spacing: 0.5px;
   }
 
   .work-card__summary {
