@@ -13,14 +13,21 @@ function normalizeHash() {
   return raw;
 }
 
+/**
+ * Viewport Y of the “reading line” under the header, for scrollspy only.
+ * Prefer --site-header-height (same basis as scroll-margin) so markerDoc matches hash alignment;
+ * fall back to offsetHeight. Ignores is-header-hidden so toggling the bar doesn’t change section.
+ */
 function markerViewportY() {
   if (!headerEl) {
     return 80;
   }
-  if (headerEl.classList.contains("is-header-hidden")) {
-    return 32;
-  }
-  const h = headerEl.getBoundingClientRect().height;
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue("--site-header-height")
+    .trim();
+  const parsed = parseFloat(raw);
+  const fromVar = Number.isFinite(parsed) && parsed > 0 ? parsed : NaN;
+  const h = Number.isFinite(fromVar) ? fromVar : headerEl.offsetHeight;
   return Math.min(Math.max(h + 12, 56), 120);
 }
 
@@ -30,9 +37,8 @@ const HEADER_REVEAL_SCROLL_TOP = 48;
 const HEADER_SURFACE_SCROLL_TOP = 4;
 /** Treat as “at bottom” when this many px or less remain (hash scroll often stops slightly above absolute max). */
 const DOCUMENT_BOTTOM_SLACK_PX = 32;
-/** Nudge About’s scrollspy boundary upward so hash / scroll-margin land reads as About, not Work. */
-const ABOUT_SCROLLSPY_LEAD_PX = 52;
-
+/** Hand off to About before #about top — max scroll often stops with the marker still below .work-grid’s bottom in document space. */
+const ABOUT_SECTION_LEAD_PX = 168;
 let lastScrollY = window.scrollY ?? 0;
 
 function isScrolledToDocumentBottom() {
@@ -105,9 +111,11 @@ function updateHeaderVisibility() {
 }
 
 /**
- * Classic scrollspy: document Y of the marker line vs section tops (About after Work in the DOM).
- * Handles gaps (marker between sections → Work), footer (marker past About → About), and avoids
- * viewport-rect checks that fail when a long section is mostly off-screen.
+ * Scrollspy using document Y of the marker line (scrollY + header offset).
+ * Work is only active while the marker is *inside* the main work column (`.work-grid` vertical
+ * span), not the whole `<section id="work">` — that section’s box often still contains the
+ * marker after #about hash scroll (cards end above the marker but the section rect does not),
+ * which wrongly kept “Work” active. Past the grid → About (gap, about copy, footer).
  */
 function activeHrefFromScroll() {
   if (!workEl || !aboutEl) {
@@ -115,19 +123,34 @@ function activeHrefFromScroll() {
   }
 
   const y = markerViewportY();
-  const scrollY = window.scrollY;
+  const scrollY =
+    window.pageYOffset ??
+    document.documentElement.scrollTop ??
+    document.scrollingElement?.scrollTop ??
+    0;
   const markerDoc = scrollY + y;
-  const workTopDoc = workEl.getBoundingClientRect().top + scrollY;
-  const aboutTopDoc = aboutEl.getBoundingClientRect().top + scrollY;
-  const aboutActivateDoc = aboutTopDoc - ABOUT_SCROLLSPY_LEAD_PX;
 
-  if (markerDoc >= aboutActivateDoc) {
+  const workTopDoc = workEl.getBoundingClientRect().top + scrollY;
+  const workTailEl = workEl.querySelector(".work-grid") ?? workEl;
+  const workTailBottomDoc = workTailEl.getBoundingClientRect().bottom + scrollY;
+  const aboutTopDoc = aboutEl.getBoundingClientRect().top + scrollY;
+  const atDocBottom = isScrolledToDocumentBottom();
+  const workZoneEnd = Math.min(
+    workTailBottomDoc,
+    aboutTopDoc - ABOUT_SECTION_LEAD_PX,
+  );
+
+  if (markerDoc < workTopDoc) {
+    return "#overview";
+  }
+  if (atDocBottom) {
+    /* Last section is About; max scroll often cannot move the marker past .work-grid’s bottom. */
     return "#about";
   }
-  if (markerDoc >= workTopDoc) {
+  if (markerDoc < workZoneEnd) {
     return "#work";
   }
-  return "#overview";
+  return "#about";
 }
 
 function applyNavActive(href) {
@@ -227,8 +250,6 @@ if (document.fonts?.ready) {
 if ("onscrollend" in window) {
   window.addEventListener("scrollend", () => {
     suppressHeaderAutoHideForAnchor = false;
-    /* Drop pending so the pill follows scrollHref after the hash scroll finishes; otherwise
-       pending stays #about while scrollHref is #work/#overview and About looks “stuck”. */
     pendingHash = null;
     scheduleScrollFrame();
   });
