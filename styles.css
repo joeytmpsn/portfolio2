@@ -53,6 +53,8 @@
   --dot-grid-offset-top: calc(
     var(--site-header-height) + 8.5rem + 1.3 * var(--text-eyebrow)
   );
+  /* JS overwrites with .site-footer height so the strip ends above the footer. */
+  --dot-grid-offset-bottom: 4.6rem;
 }
 
 *,
@@ -120,8 +122,6 @@ ul {
 
 .dot-grid {
   position: absolute;
-  top: var(--dot-grid-offset-top);
-  bottom: 0;
   left: 0;
   width: calc(
     (100% - 11 * var(--grid-gutter)) / 12 * 2 + var(--grid-gutter)
@@ -134,6 +134,23 @@ ul {
   );
   background-size: 0.75rem 0.75rem;
   background-position: 0 0;
+}
+
+/* Segments 0–2: top + height from JS. Segment 3: top from JS, bottom clears footer. */
+.dot-grid--segment {
+  display: none;
+  bottom: auto;
+}
+
+.dot-grid--segment-to-footer {
+  bottom: var(--dot-grid-offset-bottom);
+  height: auto;
+}
+
+@media (min-width: 761px) {
+  html.is-dot-grid-synced .dot-grid--segment.is-dot-grid-visible {
+    display: block;
+  }
 }
 
 @media (max-width: 760px) {
@@ -637,7 +654,9 @@ a.pill-nav__link.is-current {
 }
 
 .work-card__body .work-card__summary {
-  max-width: 47rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   font-size: 16px !important;
   font-weight: 400;
   line-height: 1.45;
@@ -775,13 +794,26 @@ a.pill-nav__link.is-current {
   }
 
   .section-heading {
-    padding: 0.65rem 0 0.85rem 0;
+    padding: 3px 0 0.85rem 0;
   }
 
   .appearances::before,
   .section.work::before,
   .section.about::before {
     width: 100%;
+  }
+
+  /* Hide dot-grid strip behind Selected Work only (same width as .dot-grid); shell--work stays above. */
+  .section.work::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: calc((100% - 11 * var(--grid-gutter)) / 12 * 2 + var(--grid-gutter));
+    background: var(--page-background);
+    z-index: 0;
+    pointer-events: none;
   }
 
   .appearances .section-heading {
@@ -797,11 +829,25 @@ a.pill-nav__link.is-current {
     align-items: stretch;
   }
 
+  /* Keep section grid for About so eyebrow stays cols 1–2 and copy aligns from col 3 like desktop. */
+  .shell--about {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-columns), 1fr);
+    column-gap: var(--grid-gutter);
+  }
+
   .section-heading,
   .appearances__list,
-  .work-grid,
-  .about__body {
+  .work-grid {
     grid-column: 1 / -1;
+  }
+
+  .shell--about .section-heading {
+    grid-column: 1 / 3;
+  }
+
+  .shell--about .about__body {
+    grid-column: 3 / 13;
   }
 
   .hero__visual {

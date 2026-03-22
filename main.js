@@ -79,6 +79,103 @@ function syncDotGridTop() {
   );
 }
 
+/** Dot strip bottom stops above `.site-footer` (measured height; wrapping / font load). */
+function syncDotGridBottom() {
+  const footer = document.querySelector(".site-footer");
+  if (!footer) {
+    return;
+  }
+  const h = Math.round(footer.offsetHeight);
+  document.documentElement.style.setProperty(
+    "--dot-grid-offset-bottom",
+    `${Math.max(0, h)}px`,
+  );
+}
+
+const DOT_GRID_SECTION_END_GAP_PX = 32;
+const DOT_GRID_TABLET_MQ = "(max-width: 1220px)";
+
+/**
+ * Vertical strip in up to four segments: 32px gaps before hero / work / about end.
+ * Desktop: gaps after hero, work, and about. Tablet: gap after hero and about only (work
+ * strip is masked); middle segment runs hero bottom → about end − 32px in one block.
+ */
+function syncDotGridSegments() {
+  const wrapper = document.querySelector(".page-wrapper");
+  const hero = document.querySelector(".hero");
+  const work = document.getElementById("work");
+  const about = document.getElementById("about");
+  const root = document.documentElement;
+  const segs = document.querySelectorAll("[data-dot-grid-seg]");
+
+  if (!wrapper || !hero || segs.length < 4) {
+    return;
+  }
+
+  const clearSeg = (el) => {
+    el.classList.remove("is-dot-grid-visible");
+    el.style.top = "";
+    el.style.height = "";
+  };
+
+  if (window.matchMedia("(max-width: 760px)").matches) {
+    segs.forEach(clearSeg);
+    return;
+  }
+
+  const wRect = wrapper.getBoundingClientRect();
+  const topStr = getComputedStyle(root).getPropertyValue("--dot-grid-offset-top").trim();
+  const topPx = Math.round(parseFloat(topStr)) || 0;
+  const heroBottom = Math.round(hero.getBoundingClientRect().bottom - wRect.top);
+  const workBottom = work
+    ? Math.round(work.getBoundingClientRect().bottom - wRect.top)
+    : heroBottom;
+  const aboutBottom = about
+    ? Math.round(about.getBoundingClientRect().bottom - wRect.top)
+    : workBottom;
+
+  const g = DOT_GRID_SECTION_END_GAP_PX;
+  const tablet = window.matchMedia(DOT_GRID_TABLET_MQ).matches;
+
+  const fillSeg = (el, top, endExclusive) => {
+    const h = Math.max(0, Math.round(endExclusive - top));
+    if (h <= 0) {
+      clearSeg(el);
+      return;
+    }
+    el.style.top = `${top}px`;
+    el.style.height = `${h}px`;
+    el.classList.add("is-dot-grid-visible");
+  };
+
+  const footerSeg = (el, top) => {
+    el.style.top = `${top}px`;
+    el.style.height = "";
+    el.classList.add("is-dot-grid-visible");
+  };
+
+  const [s0, s1, s2, s3] = segs;
+
+  fillSeg(s0, topPx, heroBottom - g);
+
+  if (tablet) {
+    fillSeg(s1, heroBottom, aboutBottom - g);
+    clearSeg(s2);
+    footerSeg(s3, aboutBottom);
+  } else {
+    fillSeg(s1, heroBottom, workBottom - g);
+    fillSeg(s2, workBottom, aboutBottom - g);
+    footerSeg(s3, aboutBottom);
+  }
+}
+
+function syncDotGrid() {
+  syncDotGridTop();
+  syncDotGridBottom();
+  syncDotGridSegments();
+  document.documentElement.classList.add("is-dot-grid-synced");
+}
+
 function updateHeaderVisibility() {
   if (!headerEl) {
     return;
@@ -232,18 +329,18 @@ if (INTERNAL_HASHES.has(normalizeHash())) {
 }
 
 syncSiteHeaderHeight();
-syncDotGridTop();
+syncDotGrid();
 lastScrollY = window.scrollY ?? 0;
 updateActiveNav();
 window.addEventListener("scroll", scheduleScrollFrame, { passive: true });
 window.addEventListener("resize", () => {
   syncSiteHeaderHeight();
-  syncDotGridTop();
+  syncDotGrid();
   scheduleScrollFrame();
 });
 window.addEventListener("load", () => {
   syncSiteHeaderHeight();
-  syncDotGridTop();
+  syncDotGrid();
   lastScrollY = window.scrollY ?? 0;
   updateActiveNav();
 });
@@ -251,7 +348,7 @@ window.addEventListener("load", () => {
 if (document.fonts?.ready) {
   document.fonts.ready.then(() => {
     syncSiteHeaderHeight();
-    syncDotGridTop();
+    syncDotGrid();
     updateActiveNav();
   });
 }
