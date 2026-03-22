@@ -835,25 +835,13 @@ a.pill-nav__link.is-current {
     align-items: stretch;
   }
 
-  /* Keep section grid for About so eyebrow stays cols 1–2 and copy aligns from col 3 like desktop. */
-  .shell--about {
-    display: grid;
-    grid-template-columns: repeat(var(--grid-columns), 1fr);
-    column-gap: var(--grid-gutter);
-  }
+  /* About uses the same flex column stack as Work; avoid a 12-col grid here or the eyebrow
+     stays in cols 1–2 only while the body sits in 3–12 (narrow “left column” on phones). */
 
   .section-heading,
   .appearances__list,
   .work-grid {
     grid-column: 1 / -1;
-  }
-
-  .shell--about .section-heading {
-    grid-column: 1 / 3;
-  }
-
-  .shell--about .about__body {
-    grid-column: 3 / 13;
   }
 
   .hero__visual {
@@ -909,6 +897,10 @@ a.pill-nav__link.is-current {
 
   .pill-nav {
     justify-content: center;
+  }
+
+  .pill-nav__link {
+    font-size: 0.75rem;
   }
 
   .hero {
