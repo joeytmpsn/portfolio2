@@ -60,6 +60,25 @@ function syncSiteHeaderHeight() {
   document.documentElement.style.setProperty("--site-header-height", `${h}px`);
 }
 
+/** Dot strip top aligns with the bottom of `.hero__eyebrow` (0px gap; all breakpoints / font load). */
+function syncDotGridTop() {
+  const eyebrow = document.querySelector(".hero__eyebrow");
+  const wrapper = document.querySelector(".page-wrapper");
+  if (!eyebrow || !wrapper) {
+    return;
+  }
+  const gapPx = 0;
+  const top = Math.round(
+    eyebrow.getBoundingClientRect().bottom -
+      wrapper.getBoundingClientRect().top +
+      gapPx,
+  );
+  document.documentElement.style.setProperty(
+    "--dot-grid-offset-top",
+    `${Math.max(0, top)}px`,
+  );
+}
+
 function updateHeaderVisibility() {
   if (!headerEl) {
     return;
@@ -213,15 +232,18 @@ if (INTERNAL_HASHES.has(normalizeHash())) {
 }
 
 syncSiteHeaderHeight();
+syncDotGridTop();
 lastScrollY = window.scrollY ?? 0;
 updateActiveNav();
 window.addEventListener("scroll", scheduleScrollFrame, { passive: true });
 window.addEventListener("resize", () => {
   syncSiteHeaderHeight();
+  syncDotGridTop();
   scheduleScrollFrame();
 });
 window.addEventListener("load", () => {
   syncSiteHeaderHeight();
+  syncDotGridTop();
   lastScrollY = window.scrollY ?? 0;
   updateActiveNav();
 });
@@ -229,6 +251,7 @@ window.addEventListener("load", () => {
 if (document.fonts?.ready) {
   document.fonts.ready.then(() => {
     syncSiteHeaderHeight();
+    syncDotGridTop();
     updateActiveNav();
   });
 }
