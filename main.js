@@ -300,16 +300,48 @@ function updateActiveNav() {
   applyNavActive(activeHref);
 }
 
+/** Pill / hash nav: keep orange + header pin in sync during smooth scroll (browser handles scroll on hashchange). */
+function setInternalNavTarget(href) {
+  if ("onscrollend" in window && !prefersReducedMotion()) {
+    suppressHeaderAutoHideForAnchor = true;
+  }
+  pendingHash = href;
+  applyNavActive(href);
+}
+
 window.addEventListener("hashchange", () => {
   const h = normalizeHash();
   if (!INTERNAL_HASHES.has(h)) {
     return;
   }
-  if ("onscrollend" in window && !prefersReducedMotion()) {
-    suppressHeaderAutoHideForAnchor = true;
-  }
-  pendingHash = h;
-  applyNavActive(h);
+  setInternalNavTarget(h);
+});
+
+navLinks.forEach((link) => {
+  link.addEventListener("click", (event) => {
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+    const href = link.getAttribute("href");
+    if (!href || !INTERNAL_HASHES.has(href)) {
+      return;
+    }
+    event.preventDefault();
+    setInternalNavTarget(href);
+    const target = document.querySelector(href);
+    if (target) {
+      target.scrollIntoView({
+        block: "start",
+        behavior: prefersReducedMotion() ? "auto" : "smooth",
+      });
+    }
+  });
 });
 
 let ticking = false;
