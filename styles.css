@@ -524,6 +524,7 @@ a.pill-nav__link.is-current {
   .hero__eyebrow {
     font-size: 18px;
     padding-top: 133px;
+    padding-bottom: 200px;
   }
 
   .hero__lede {
@@ -869,9 +870,10 @@ a.pill-nav__link.is-current {
     grid-column: 1 / 3;
     grid-row: 2;
     height: fit-content;
-    padding-top: 7px;
-    padding-bottom: 40px;
+    padding-top: 4px;
+    padding-bottom: 92px;
     padding-inline: 0;
+    line-height: 35px;
   }
 
   .hero__copy {
@@ -918,6 +920,7 @@ a.pill-nav__link.is-current {
     padding-top: 0;
     padding-bottom: 0;
     padding-inline: 0;
+    line-height: 1.3;
   }
 
   .hero__copy {
