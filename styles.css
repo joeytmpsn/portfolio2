@@ -136,6 +136,12 @@ ul {
   background-position: 0 0;
 }
 
+@media (max-width: 760px) {
+  .dot-grid {
+    display: none;
+  }
+}
+
 .shell {
   width: 100%;
   margin-inline: auto;
@@ -279,6 +285,9 @@ a.pill-nav__link.is-current {
   background: var(--surface-pill-strong);
   border-color: rgba(255, 118, 49, 0.55);
   color: var(--ink-strong);
+  text-shadow:
+    0 0 4px rgba(255, 255, 255, 0.2),
+    0 0.5px 1px rgba(0, 0, 0, 0.15);
   box-shadow:
     var(--shadow-pill),
     0 0 24px rgba(255, 118, 49, 0.28);
@@ -444,7 +453,7 @@ a.pill-nav__link.is-current {
 
 .appearances .section-heading {
   background-color: transparent;
-  padding: 3px 0 0.85rem 14px;
+  padding: 3px 0 0.85rem 0;
 }
 
 .section--lines .shell--section {
@@ -513,7 +522,7 @@ a.pill-nav__link.is-current {
   align-items: flex-start;
   box-sizing: border-box;
   width: 100%;
-  padding: 0.65rem 0 0.85rem 14px;
+  padding: 0.65rem 0 0.85rem 0;
 }
 
 .section-heading .eyebrow {
@@ -549,6 +558,13 @@ a.pill-nav__link.is-current {
 
 .appearance-row__description {
   color: var(--ink-soft);
+}
+
+.appearance-row__meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .work {
@@ -759,7 +775,7 @@ a.pill-nav__link.is-current {
   }
 
   .section-heading {
-    padding: 0.65rem 0 0.85rem 14px;
+    padding: 0.65rem 0 0.85rem 0;
   }
 
   .appearances::before,
@@ -769,7 +785,7 @@ a.pill-nav__link.is-current {
   }
 
   .appearances .section-heading {
-    padding: 3px 0 0.85rem 14px;
+    padding: 3px 0 0.85rem 0;
   }
 
   .appearances .shell--section {
@@ -876,6 +892,11 @@ a.pill-nav__link.is-current {
 
   .work-card__body {
     padding-inline: 1.25rem;
+  }
+
+  .appearance-row__meta {
+    flex-basis: 100%;
+    width: 100%;
   }
 
   .work-card__meta .meta-pill {
