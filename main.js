@@ -33,8 +33,6 @@ function markerViewportY() {
 
 const SCROLL_DIR_THRESHOLD = 6;
 const HEADER_REVEAL_SCROLL_TOP = 48;
-/** Past this scroll offset, header shows gradient fill + shadow + backdrop. */
-const HEADER_SURFACE_SCROLL_TOP = 4;
 /** Treat as “at bottom” when this many px or less remain (hash scroll often stops slightly above absolute max). */
 const DOCUMENT_BOTTOM_SLACK_PX = 32;
 /** Hand off to About before #about top — max scroll often stops with the marker still below .work-grid’s bottom in document space. */
@@ -60,14 +58,6 @@ function syncSiteHeaderHeight() {
   }
   const h = Math.round(headerEl.offsetHeight);
   document.documentElement.style.setProperty("--site-header-height", `${h}px`);
-}
-
-function updateHeaderScrolledSurface() {
-  if (!headerEl) {
-    return;
-  }
-  const y = window.scrollY ?? 0;
-  headerEl.classList.toggle("is-header-scrolled", y > HEADER_SURFACE_SCROLL_TOP);
 }
 
 function updateHeaderVisibility() {
@@ -210,7 +200,6 @@ let ticking = false;
 function scheduleScrollFrame() {
   if (!ticking) {
     requestAnimationFrame(() => {
-      updateHeaderScrolledSurface();
       updateActiveNav();
       updateHeaderVisibility();
       ticking = false;
@@ -225,7 +214,6 @@ if (INTERNAL_HASHES.has(normalizeHash())) {
 
 syncSiteHeaderHeight();
 lastScrollY = window.scrollY ?? 0;
-updateHeaderScrolledSurface();
 updateActiveNav();
 window.addEventListener("scroll", scheduleScrollFrame, { passive: true });
 window.addEventListener("resize", () => {
@@ -235,14 +223,12 @@ window.addEventListener("resize", () => {
 window.addEventListener("load", () => {
   syncSiteHeaderHeight();
   lastScrollY = window.scrollY ?? 0;
-  updateHeaderScrolledSurface();
   updateActiveNav();
 });
 
 if (document.fonts?.ready) {
   document.fonts.ready.then(() => {
     syncSiteHeaderHeight();
-    updateHeaderScrolledSurface();
     updateActiveNav();
   });
 }
