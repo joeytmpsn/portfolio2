@@ -366,7 +366,7 @@ a.pill-nav__link.is-current {
 
 .about__intro,
 .about__body p {
-  font-size: var(--text-body-300);
+  font-size: 20px;
   line-height: 1.45;
   color: var(--ink-strong);
 }
@@ -528,6 +528,10 @@ a.pill-nav__link.is-current {
 
   .hero__lede {
     font-size: 22px;
+  }
+
+  .about__body {
+    padding-top: 8px;
   }
 }
 
