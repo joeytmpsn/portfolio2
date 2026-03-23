@@ -96,9 +96,10 @@ const DOT_GRID_SECTION_END_GAP_PX = 32;
 const DOT_GRID_TABLET_MQ = "(max-width: 1220px)";
 
 /**
- * Vertical strip in up to four segments: 32px gaps before hero / work / about end.
- * Desktop: gaps after hero, work, and about. Tablet: gap after hero and about only (work
- * strip is masked); middle segment runs hero bottom → about end − 32px in one block.
+ * Vertical strip in up to four segments: 32px gaps before hero / work / about *content* end.
+ * Uses `.shell--work` / `.shell--about` bottoms so dots do not run through `.section` /
+ * `.about` bottom padding (which made the strip extend past the cards and About copy).
+ * Footer segment starts at `#about` section bottom so the padded gap before the footer stays clear.
  */
 function syncDotGridSegments() {
   const wrapper = document.querySelector(".page-wrapper");
@@ -127,12 +128,24 @@ function syncDotGridSegments() {
   const topStr = getComputedStyle(root).getPropertyValue("--dot-grid-offset-top").trim();
   const topPx = Math.round(parseFloat(topStr)) || 0;
   const heroBottom = Math.round(hero.getBoundingClientRect().bottom - wRect.top);
-  const workBottom = work
-    ? Math.round(work.getBoundingClientRect().bottom - wRect.top)
-    : heroBottom;
-  const aboutBottom = about
+
+  const workShell = work?.querySelector(".shell--work");
+  const workContentBottom = workShell
+    ? Math.round(workShell.getBoundingClientRect().bottom - wRect.top)
+    : work
+      ? Math.round(work.getBoundingClientRect().bottom - wRect.top)
+      : heroBottom;
+
+  const aboutShell = about?.querySelector(".shell--about");
+  const aboutContentBottom = aboutShell
+    ? Math.round(aboutShell.getBoundingClientRect().bottom - wRect.top)
+    : about
+      ? Math.round(about.getBoundingClientRect().bottom - wRect.top)
+      : workContentBottom;
+
+  const aboutSectionBottom = about
     ? Math.round(about.getBoundingClientRect().bottom - wRect.top)
-    : workBottom;
+    : aboutContentBottom;
 
   const g = DOT_GRID_SECTION_END_GAP_PX;
   const tablet = window.matchMedia(DOT_GRID_TABLET_MQ).matches;
@@ -159,13 +172,13 @@ function syncDotGridSegments() {
   fillSeg(s0, topPx, heroBottom - g);
 
   if (tablet) {
-    fillSeg(s1, heroBottom, aboutBottom - g);
+    fillSeg(s1, heroBottom, aboutContentBottom - g);
     clearSeg(s2);
-    footerSeg(s3, aboutBottom);
+    footerSeg(s3, aboutSectionBottom);
   } else {
-    fillSeg(s1, heroBottom, workBottom - g);
-    fillSeg(s2, workBottom, aboutBottom - g);
-    footerSeg(s3, aboutBottom);
+    fillSeg(s1, heroBottom, workContentBottom - g);
+    fillSeg(s2, workContentBottom, aboutContentBottom - g);
+    footerSeg(s3, aboutSectionBottom);
   }
 }
 
