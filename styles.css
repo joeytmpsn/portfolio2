@@ -127,12 +127,10 @@ ul {
     (100% - 11 * var(--grid-gutter)) / 12 * 2 + var(--grid-gutter)
   );
   pointer-events: none;
-  background-image: radial-gradient(
-    circle at center,
-    rgba(51, 35, 29, 0.24) 1px,
-    transparent 1px
-  );
-  background-size: 0.75rem 0.75rem;
+  /* SVG tile avoids radial-gradient repeat seams on very tall composited layers (Chrome/WebKit). */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Ccircle cx='6' cy='6' r='1' fill='%2333231d' fill-opacity='0.24'/%3E%3C/svg%3E");
+  background-size: 12px 12px;
+  background-repeat: repeat;
   background-position: 0 0;
 }
 
@@ -150,6 +148,9 @@ ul {
 @media (min-width: 761px) {
   html.is-dot-grid-synced .dot-grid--segment.is-dot-grid-visible {
     display: block;
+    /* Stable compositing for tall strip layers (reduces horizontal band glitches). */
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 }
 
@@ -640,8 +641,6 @@ a.pill-nav__link.is-current {
   grid-column: 3 / 11;
   display: grid;
   gap: 2.2rem;
-  /* Card box-shadows paint over the margin strip where dots sit under main — clip spill. */
-  overflow: clip;
 }
 
 .work-card {

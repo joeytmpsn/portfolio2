@@ -115,6 +115,42 @@ function dotGridPatternStepPx() {
   return Math.round(n);
 }
 
+/** Work / About section heights drive segment ends — observe both (lazy images, copy reflow). */
+function initDotGridSectionResizeHooks() {
+  const workSection = document.getElementById("work");
+  const aboutSection = document.getElementById("about");
+  if (typeof ResizeObserver === "undefined" || (!workSection && !aboutSection)) {
+    return;
+  }
+  let scheduled = false;
+  const scheduleSync = () => {
+    if (scheduled) {
+      return;
+    }
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      syncDotGrid();
+    });
+  };
+  const ro = new ResizeObserver(scheduleSync);
+  if (workSection) {
+    ro.observe(workSection);
+    workSection.addEventListener(
+      "load",
+      (event) => {
+        if (event.target instanceof HTMLImageElement) {
+          scheduleSync();
+        }
+      },
+      true,
+    );
+  }
+  if (aboutSection) {
+    ro.observe(aboutSection);
+  }
+}
+
 function dotGridBackgroundYForTop(topPx, stepPx) {
   const step = stepPx;
   const t = Math.round(topPx);
@@ -125,12 +161,11 @@ function dotGridBackgroundYForTop(topPx, stepPx) {
 /**
  * Desktop dot strip (coordinates relative to .page-wrapper top):
  * - s0: strip start → 32px above hero bottom
- * - s1: hero bottom → 32px above .work-grid bottom (Appearances + Selected Work cards only)
+ * - s1: hero bottom → 32px above `#work` section bottom (Appearances + full work section incl. padding)
  * - [32px empty]
- * - s2: work-grid bottom → 32px above .shell--about bottom (About copy; nothing below shell / above footer)
- * - [32px empty above footer top]
+ * - s2: `#work` bottom → 32px above `#about` section bottom (incl. padding; clamped to footer top)
  * - s3: footer top → page bottom (CSS bottom offset)
- * Pattern Y phase is aligned so rows line up across segments. Tablet: one middle band + footer.
+ * Pattern Y phase is aligned across segments. Tablet: one middle band + footer.
  */
 function syncDotGridSegments() {
   const wrapper = document.querySelector(".page-wrapper");
@@ -161,31 +196,25 @@ function syncDotGridSegments() {
   const topPx = Math.round(parseFloat(topStr)) || 0;
   const heroBottom = Math.round(hero.getBoundingClientRect().bottom - wRect.top);
 
-  const workGrid = document.querySelector("#work .work-grid");
   const workSection = document.getElementById("work");
-  const workGridBottom = workGrid
-    ? Math.round(workGrid.getBoundingClientRect().bottom - wRect.top)
-    : workSection
-      ? Math.round(workSection.getBoundingClientRect().bottom - wRect.top)
-      : heroBottom;
+  const workSectionBottom = workSection
+    ? Math.round(workSection.getBoundingClientRect().bottom - wRect.top)
+    : heroBottom;
 
-  const aboutShell = about?.querySelector(".shell--about");
-  const aboutShellBottom = aboutShell
-    ? Math.round(aboutShell.getBoundingClientRect().bottom - wRect.top)
-    : about
-      ? Math.round(about.getBoundingClientRect().bottom - wRect.top)
-      : workGridBottom;
+  const aboutSectionBottom = about
+    ? Math.round(about.getBoundingClientRect().bottom - wRect.top)
+    : workSectionBottom;
 
   let footerTopY;
   if (footer) {
     footerTopY = Math.round(footer.getBoundingClientRect().top - wRect.top);
   } else if (about) {
-    footerTopY = Math.round(about.getBoundingClientRect().bottom - wRect.top);
+    footerTopY = aboutSectionBottom;
   } else {
-    footerTopY = aboutShellBottom;
+    footerTopY = workSectionBottom;
   }
 
-  const aboutBandEnd = Math.min(aboutShellBottom, footerTopY);
+  const aboutStripEndExclusive = Math.min(aboutSectionBottom, footerTopY);
 
   const g = DOT_GRID_SECTION_END_GAP_PX;
   const tablet = window.matchMedia(DOT_GRID_TABLET_MQ).matches;
@@ -221,8 +250,8 @@ function syncDotGridSegments() {
     clearSeg(s2);
     footerSeg(s3, footerTopY);
   } else {
-    fillSeg(s1, heroBottom, workGridBottom - g);
-    fillSeg(s2, workGridBottom, aboutBandEnd - g);
+    fillSeg(s1, heroBottom, workSectionBottom - g);
+    fillSeg(s2, workSectionBottom, aboutStripEndExclusive - g);
     footerSeg(s3, footerTopY);
   }
 }
@@ -420,6 +449,7 @@ if (INTERNAL_HASHES.has(normalizeHash())) {
 
 syncSiteHeaderHeight();
 syncDotGrid();
+initDotGridSectionResizeHooks();
 lastScrollY = window.scrollY ?? 0;
 updateActiveNav();
 window.addEventListener("scroll", scheduleScrollFrame, { passive: true });
