@@ -236,7 +236,8 @@ ul {
   padding: 8px;
   align-items: flex-start;
   gap: 6px;
-  justify-content: flex-start;
+  /* Centered cluster on tablet/mobile; desktop overrides in (min-width: 1221px). */
+  justify-content: center;
   border-radius: 9999px;
   border: 1px solid rgba(0, 0, 0, 0.04);
   background: #f7f4f2;
@@ -546,6 +547,7 @@ a.pill-nav__link.is-current {
     display: flex;
     flex-wrap: nowrap;
     align-items: stretch;
+    justify-content: flex-start;
   }
 
   .pill-nav .pill-nav__link {
@@ -807,6 +809,23 @@ a.pill-nav__link.is-current {
 @media (max-width: 1220px) {
   :root {
     --shell-width: min(100% - 2rem, 64rem);
+  }
+
+  /* Nav: keep centered pill cluster + natural pill widths (no desktop stretch / min-width rules). */
+  .pill-nav {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: auto;
+    max-width: 100%;
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .pill-nav .pill-nav__link {
+    flex: 0 1 auto;
+    min-width: unset;
   }
 
   .shell--hero {
