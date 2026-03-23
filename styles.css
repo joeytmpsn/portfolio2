@@ -534,6 +534,28 @@ a.pill-nav__link.is-current {
   .about__body {
     padding-top: 8px;
   }
+
+  /* Same horizontal band as .hero__copy (cols 3–7); left edge lines up with appearances + work grid. */
+  .pill-nav {
+    grid-column: 3 / 7;
+    justify-self: stretch;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+  }
+
+  .pill-nav .pill-nav__link {
+    flex: 1 1 0;
+    min-width: 100px;
+  }
+
+  .pill-nav .pill-nav__link[href="#work"],
+  .pill-nav .pill-nav__link[href="#about"] {
+    min-width: 0;
+  }
 }
 
 .section-heading {
