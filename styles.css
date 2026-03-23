@@ -354,7 +354,7 @@ a.pill-nav__link.is-current {
 
 .hero__copy {
   grid-column: 3 / 7;
-  padding-top: 8.0625rem; /* 129px */
+  padding-top: 126px;
   display: grid;
   gap: 1.6rem;
   max-width: 26rem;
