@@ -943,6 +943,7 @@ a.pill-nav__link.is-current {
 
   .pill-nav__link {
     font-size: 0.75rem;
+    padding-inline: 10px;
   }
 
   .hero {
