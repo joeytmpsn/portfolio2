@@ -94,18 +94,51 @@ function syncDotGridBottom() {
 
 const DOT_GRID_SECTION_END_GAP_PX = 32;
 const DOT_GRID_TABLET_MQ = "(max-width: 1220px)";
+/** Matches `.about .shell--about::after { top: -4.5rem }` (horizontal rule between Work and About). */
+const DOT_GRID_WORK_ABOUT_DIVIDER_OFFSET_REM = 4.5;
+/** Fallback if computed background-size is unavailable (see `dotGridPatternStepPx()`). */
+const DOT_GRID_PATTERN_STEP_PX = 12;
+
+function remToPx(rem) {
+  const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
+  return Math.round(rem * (Number.isFinite(rootPx) ? rootPx : 16));
+}
+
+function dotGridPatternStepPx() {
+  const probe = document.querySelector(".dot-grid");
+  if (!probe) {
+    return DOT_GRID_PATTERN_STEP_PX;
+  }
+  const raw = getComputedStyle(probe).backgroundSize.trim().split(/\s+/)[0];
+  const n = parseFloat(raw);
+  if (!Number.isFinite(n) || n <= 0) {
+    return DOT_GRID_PATTERN_STEP_PX;
+  }
+  if (raw.endsWith("rem")) {
+    return Math.round(
+      n * (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16),
+    );
+  }
+  return Math.round(n);
+}
+
+function dotGridBackgroundYForTop(topPx, stepPx) {
+  const step = stepPx;
+  const t = Math.round(topPx);
+  const phase = ((t % step) + step) % step;
+  return -phase;
+}
 
 /**
- * Vertical strip in up to four segments: 32px gaps before hero / work / about *content* end.
- * Uses `.shell--work` / `.shell--about` bottoms so dots do not run through `.section` /
- * `.about` bottom padding (which made the strip extend past the cards and About copy).
- * Footer segment starts at `#about` section bottom so the padded gap before the footer stays clear.
+ * Vertical strip: 32px clear band before each horizontal divider (Work/About rule, footer top).
+ * Boundaries follow the real lines, not shell boxes — avoids dots past the rule, holes in section
+ * padding, and extra segment splits that reset the dot pattern (fake “gaps”) mid-page.
  */
 function syncDotGridSegments() {
   const wrapper = document.querySelector(".page-wrapper");
   const hero = document.querySelector(".hero");
-  const work = document.getElementById("work");
   const about = document.getElementById("about");
+  const footer = document.querySelector(".site-footer");
   const root = document.documentElement;
   const segs = document.querySelectorAll("[data-dot-grid-seg]");
 
@@ -117,6 +150,7 @@ function syncDotGridSegments() {
     el.classList.remove("is-dot-grid-visible");
     el.style.top = "";
     el.style.height = "";
+    el.style.backgroundPosition = "";
   };
 
   if (window.matchMedia("(max-width: 760px)").matches) {
@@ -129,41 +163,51 @@ function syncDotGridSegments() {
   const topPx = Math.round(parseFloat(topStr)) || 0;
   const heroBottom = Math.round(hero.getBoundingClientRect().bottom - wRect.top);
 
-  const workShell = work?.querySelector(".shell--work");
-  const workContentBottom = workShell
-    ? Math.round(workShell.getBoundingClientRect().bottom - wRect.top)
-    : work
-      ? Math.round(work.getBoundingClientRect().bottom - wRect.top)
-      : heroBottom;
-
   const aboutShell = about?.querySelector(".shell--about");
-  const aboutContentBottom = aboutShell
-    ? Math.round(aboutShell.getBoundingClientRect().bottom - wRect.top)
-    : about
-      ? Math.round(about.getBoundingClientRect().bottom - wRect.top)
-      : workContentBottom;
+  let dividerWorkAboutY;
+  if (aboutShell) {
+    dividerWorkAboutY = Math.round(
+      aboutShell.getBoundingClientRect().top -
+        wRect.top -
+        remToPx(DOT_GRID_WORK_ABOUT_DIVIDER_OFFSET_REM),
+    );
+  } else if (about) {
+    dividerWorkAboutY = Math.round(about.getBoundingClientRect().top - wRect.top);
+  } else {
+    dividerWorkAboutY = heroBottom;
+  }
 
-  const aboutSectionBottom = about
-    ? Math.round(about.getBoundingClientRect().bottom - wRect.top)
-    : aboutContentBottom;
+  let footerTopY;
+  if (footer) {
+    footerTopY = Math.round(footer.getBoundingClientRect().top - wRect.top);
+  } else if (about) {
+    footerTopY = Math.round(about.getBoundingClientRect().bottom - wRect.top);
+  } else {
+    footerTopY = dividerWorkAboutY;
+  }
 
   const g = DOT_GRID_SECTION_END_GAP_PX;
   const tablet = window.matchMedia(DOT_GRID_TABLET_MQ).matches;
+  const patternStep = dotGridPatternStepPx();
 
   const fillSeg = (el, top, endExclusive) => {
-    const h = Math.max(0, Math.round(endExclusive - top));
+    const t = Math.round(top);
+    const h = Math.max(0, Math.round(endExclusive - t));
     if (h <= 0) {
       clearSeg(el);
       return;
     }
-    el.style.top = `${top}px`;
+    el.style.top = `${t}px`;
     el.style.height = `${h}px`;
+    el.style.backgroundPosition = `0 ${dotGridBackgroundYForTop(t, patternStep)}px`;
     el.classList.add("is-dot-grid-visible");
   };
 
   const footerSeg = (el, top) => {
-    el.style.top = `${top}px`;
+    const t = Math.round(top);
+    el.style.top = `${t}px`;
     el.style.height = "";
+    el.style.backgroundPosition = `0 ${dotGridBackgroundYForTop(t, patternStep)}px`;
     el.classList.add("is-dot-grid-visible");
   };
 
@@ -172,13 +216,13 @@ function syncDotGridSegments() {
   fillSeg(s0, topPx, heroBottom - g);
 
   if (tablet) {
-    fillSeg(s1, heroBottom, aboutContentBottom - g);
+    fillSeg(s1, heroBottom, footerTopY - g);
     clearSeg(s2);
-    footerSeg(s3, aboutSectionBottom);
+    footerSeg(s3, footerTopY);
   } else {
-    fillSeg(s1, heroBottom, workContentBottom - g);
-    fillSeg(s2, workContentBottom, aboutContentBottom - g);
-    footerSeg(s3, aboutSectionBottom);
+    fillSeg(s1, heroBottom, dividerWorkAboutY - g);
+    fillSeg(s2, dividerWorkAboutY, footerTopY - g);
+    footerSeg(s3, footerTopY);
   }
 }
 
