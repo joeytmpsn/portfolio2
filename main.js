@@ -94,15 +94,8 @@ function syncDotGridBottom() {
 
 const DOT_GRID_SECTION_END_GAP_PX = 32;
 const DOT_GRID_TABLET_MQ = "(max-width: 1220px)";
-/** Matches `.about .shell--about::after { top: -4.5rem }` (horizontal rule between Work and About). */
-const DOT_GRID_WORK_ABOUT_DIVIDER_OFFSET_REM = 4.5;
 /** Fallback if computed background-size is unavailable (see `dotGridPatternStepPx()`). */
 const DOT_GRID_PATTERN_STEP_PX = 12;
-
-function remToPx(rem) {
-  const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
-  return Math.round(rem * (Number.isFinite(rootPx) ? rootPx : 16));
-}
 
 function dotGridPatternStepPx() {
   const probe = document.querySelector(".dot-grid");
@@ -130,9 +123,14 @@ function dotGridBackgroundYForTop(topPx, stepPx) {
 }
 
 /**
- * Vertical strip: 32px clear band before each horizontal divider (Work/About rule, footer top).
- * Boundaries follow the real lines, not shell boxes — avoids dots past the rule, holes in section
- * padding, and extra segment splits that reset the dot pattern (fake “gaps”) mid-page.
+ * Desktop dot strip (coordinates relative to .page-wrapper top):
+ * - s0: strip start → 32px above hero bottom
+ * - s1: hero bottom → 32px above .work-grid bottom (Appearances + Selected Work cards only)
+ * - [32px empty]
+ * - s2: work-grid bottom → 32px above .shell--about bottom (About copy; nothing below shell / above footer)
+ * - [32px empty above footer top]
+ * - s3: footer top → page bottom (CSS bottom offset)
+ * Pattern Y phase is aligned so rows line up across segments. Tablet: one middle band + footer.
  */
 function syncDotGridSegments() {
   const wrapper = document.querySelector(".page-wrapper");
@@ -163,19 +161,20 @@ function syncDotGridSegments() {
   const topPx = Math.round(parseFloat(topStr)) || 0;
   const heroBottom = Math.round(hero.getBoundingClientRect().bottom - wRect.top);
 
+  const workGrid = document.querySelector("#work .work-grid");
+  const workSection = document.getElementById("work");
+  const workGridBottom = workGrid
+    ? Math.round(workGrid.getBoundingClientRect().bottom - wRect.top)
+    : workSection
+      ? Math.round(workSection.getBoundingClientRect().bottom - wRect.top)
+      : heroBottom;
+
   const aboutShell = about?.querySelector(".shell--about");
-  let dividerWorkAboutY;
-  if (aboutShell) {
-    dividerWorkAboutY = Math.round(
-      aboutShell.getBoundingClientRect().top -
-        wRect.top -
-        remToPx(DOT_GRID_WORK_ABOUT_DIVIDER_OFFSET_REM),
-    );
-  } else if (about) {
-    dividerWorkAboutY = Math.round(about.getBoundingClientRect().top - wRect.top);
-  } else {
-    dividerWorkAboutY = heroBottom;
-  }
+  const aboutShellBottom = aboutShell
+    ? Math.round(aboutShell.getBoundingClientRect().bottom - wRect.top)
+    : about
+      ? Math.round(about.getBoundingClientRect().bottom - wRect.top)
+      : workGridBottom;
 
   let footerTopY;
   if (footer) {
@@ -183,8 +182,10 @@ function syncDotGridSegments() {
   } else if (about) {
     footerTopY = Math.round(about.getBoundingClientRect().bottom - wRect.top);
   } else {
-    footerTopY = dividerWorkAboutY;
+    footerTopY = aboutShellBottom;
   }
+
+  const aboutBandEnd = Math.min(aboutShellBottom, footerTopY);
 
   const g = DOT_GRID_SECTION_END_GAP_PX;
   const tablet = window.matchMedia(DOT_GRID_TABLET_MQ).matches;
@@ -220,8 +221,8 @@ function syncDotGridSegments() {
     clearSeg(s2);
     footerSeg(s3, footerTopY);
   } else {
-    fillSeg(s1, heroBottom, dividerWorkAboutY - g);
-    fillSeg(s2, dividerWorkAboutY, footerTopY - g);
+    fillSeg(s1, heroBottom, workGridBottom - g);
+    fillSeg(s2, workGridBottom, aboutBandEnd - g);
     footerSeg(s3, footerTopY);
   }
 }

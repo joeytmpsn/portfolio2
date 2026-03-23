@@ -640,6 +640,8 @@ a.pill-nav__link.is-current {
   grid-column: 3 / 11;
   display: grid;
   gap: 2.2rem;
+  /* Card box-shadows paint over the margin strip where dots sit under main — clip spill. */
+  overflow: clip;
 }
 
 .work-card {
