@@ -980,7 +980,8 @@ a.pill-nav__link.is-current {
   }
 
   .work-card__body {
-    padding-inline: 1.25rem;
+    padding-inline: 16px;
+    padding-bottom: 16px;
   }
 
   .appearance-row__meta {
