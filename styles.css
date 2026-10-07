@@ -787,6 +787,10 @@ a.pill-nav__link.is-current {
   align-items: start;
 }
 
+#about-title {
+  transform: translateY(-1px);
+}
+
 .about__body {
   grid-column: 3 / 13;
   display: grid;
